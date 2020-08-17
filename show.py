@@ -4,7 +4,7 @@ from PIL import Image, ImageFont, ImageDraw
 import numpy as np
 
 # 输入参数
-qualify_feedback_file = "quality_feedback.csv"
+qualify_feedback_file = "quality_feedback.txt"
 video_path = "./renames/step1"
 
 actions_chinese_to_english_dict = {
@@ -37,7 +37,7 @@ def _add_chinese_in_image(img, context, color=(255, 0, 0)):
     img = Image.fromarray(np.array(img))
 
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype("simhei.ttf", 20, encoding="utf-8")
+    font = ImageFont.truetype("MSYH.TTF", 20, encoding="utf-8")
     draw.text((0, 0), context, color, font=font)
 
     img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
