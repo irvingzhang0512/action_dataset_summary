@@ -1,17 +1,14 @@
 import os
 import shutil
 
-p_cnt_0722 = 4
-p_cnt_0729 = 12
+# 输入数据
+src_video_path = "./splits/0729"
+target_video_path = "./renames"
 
-p_start_id = 1
-
-src_video_path = "F:\labeling\\videos\拆分数据\\0722"
-target_video_path = "F:\\labeling\\videos\拆分数据\\rename"
+# 数据目录初始化
 useless_video_dir = os.path.join(target_video_path, "useless")
 step1_video_path = os.path.join(target_video_path, "step1")
 step2_video_path = os.path.join(target_video_path, "step2")
-
 if not os.path.exists(target_video_path):
     os.makedirs(target_video_path)
 if not os.path.exists(step1_video_path):
@@ -20,6 +17,9 @@ if not os.path.exists(step2_video_path):
     os.makedirs(step2_video_path)
 if not os.path.exists(useless_video_dir):
     os.makedirs(useless_video_dir)
+
+# 用到的一些参数
+start_pid_num = 0
 actions_chinese_to_english_dict = {
     # 跌倒类型
     "原地软倒": "stillfall",
@@ -81,22 +81,35 @@ camera_chinese_to_english = {
     "reid04": "reid04",
     "reid05": "reid05",
 }
+
+
 def _handle_single_video(video_path):
     conds = os.path.basename(video_path).split(".")[0].split("_")
+
+    # 选择需要的数据，剔除 reid 数据
     action_name = conds[-1]
     if action_name not in actions_chinese_to_english_dict.keys():
         if "行走" not in action_name:
             print("unknown action {} for {}".format(action_name, video_path))
-        shutil.copy(video_path, os.path.join(useless_video_dir, os.path.basename(video_path)))
+        shutil.copy(
+            video_path,
+            os.path.join(useless_video_dir, os.path.basename(video_path)),
+        )
         return
-    action_english_name = actions_chinese_to_english_dict[action_name]
+
+    # 选择命名合法的视频
     if len(conds) != 9:
         print("rename error {}".format(video_path))
-        shutil.copy(video_path, os.path.join(useless_video_dir, os.path.basename(video_path)))
+        shutil.copy(
+            video_path,
+            os.path.join(useless_video_dir, os.path.basename(video_path)),
+        )
         return
-    pid = conds[0]
-    pid_int = int(pid[1:]) + p_start_id - 1
-    pid = "P{:04d}".format(pid_int)
+
+    # 从文件名中提取各个元素
+    pid_num = int(conds[0].split("P")[1]) + start_pid_num
+    pid_num = "%04d" % pid_num  # add 0
+    pid = "P" + str(pid_num)
     pose = conds[1]
     light = conds[2]
     sleeve = conds[3]
@@ -104,61 +117,80 @@ def _handle_single_video(video_path):
     shelter = conds[5]
     camera = conds[6]
     sceneid = conds[7]
+
+    # 判断输入数据是否合法
     if pose not in pose_chinese_to_english.keys():
         print("unknown pose {}".format(video_path))
-        shutil.copy(video_path, os.path.join(useless_video_dir, os.path.basename(video_path)))
+        shutil.copy(
+            video_path,
+            os.path.join(useless_video_dir, os.path.basename(video_path)),
+        )
         return
     if light not in light_chinese_to_english.keys():
         print("unknown light {}".format(video_path))
-        shutil.copy(video_path, os.path.join(useless_video_dir, os.path.basename(video_path)))
+        shutil.copy(
+            video_path,
+            os.path.join(useless_video_dir, os.path.basename(video_path)),
+        )
         return
     if sleeve not in sleeve_chinese_to_english.keys():
         print("unknown sleeve {}".format(video_path))
-        shutil.copy(video_path, os.path.join(useless_video_dir, os.path.basename(video_path)))
+        shutil.copy(
+            video_path,
+            os.path.join(useless_video_dir, os.path.basename(video_path)),
+        )
         return
     if shot not in shot_chinese_to_english.keys():
         print("unknown shot {}".format(video_path))
-        shutil.copy(video_path, os.path.join(useless_video_dir, os.path.basename(video_path)))
+        shutil.copy(
+            video_path,
+            os.path.join(useless_video_dir, os.path.basename(video_path)),
+        )
         return
     if shelter not in shelter_chinese_to_english.keys():
         print("unknown shelter {}".format(video_path))
-        shutil.copy(video_path, os.path.join(useless_video_dir, os.path.basename(video_path)))
+        shutil.copy(
+            video_path,
+            os.path.join(useless_video_dir, os.path.basename(video_path)),
+        )
         return
     if camera not in camera_chinese_to_english.keys():
         print("unknown camera {}".format(video_path))
-        shutil.copy(video_path, os.path.join(useless_video_dir, os.path.basename(video_path)))
+        shutil.copy(
+            video_path,
+            os.path.join(useless_video_dir, os.path.basename(video_path)),
+        )
         return
+
+    # 根据 camera 类别拆分数据，并分别保存
     if camera.startswith("reid"):
         target_dir = os.path.join(step2_video_path, pid)
     else:
         target_dir = os.path.join(step1_video_path, pid)
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
-    new_file_name = "_".join([
-        action_english_name,
-        camera_chinese_to_english[camera],
-        pose_chinese_to_english[pose],
-        light_chinese_to_english[light],
-        sleeve_chinese_to_english[sleeve],
-        shot_chinese_to_english[shot],
-        shelter_chinese_to_english[shelter],
-        sceneid,
-        pid,
-    ]) + ".mp4"
-    # print("copy from {} to {}".format(video_path, os.path.join(target_dir, new_file_name)))
+    new_file_name = (
+        "_".join(
+            [
+                actions_chinese_to_english_dict[action_name],
+                camera_chinese_to_english[camera],
+                pose_chinese_to_english[pose],
+                light_chinese_to_english[light],
+                sleeve_chinese_to_english[sleeve],
+                shot_chinese_to_english[shot],
+                shelter_chinese_to_english[shelter],
+                sceneid,
+                pid,
+            ]
+        )
+        + ".mp4"
+    )
     shutil.copy(video_path, os.path.join(target_dir, new_file_name))
-def _go_through_directory(src_dir):
-    if not os.path.isdir(src_dir):
-        print("{} is not a directory.".format(src_dir))
-        return
-    for file_name in os.listdir(src_dir):
-        cur_file = os.path.join(src_dir, file_name)
-        if os.path.isdir(cur_file):
-            _go_through_directory(cur_file)
-        elif cur_file.endswith(".mp4"):
-            _handle_single_video(cur_file)
-        else:
-            print("unknown file {}".format(cur_file))
 
-if __name__ == '__main__':
-    _go_through_directory(src_video_path)
+
+if __name__ == "__main__":
+    for cur_path, _, file_names in os.walk(src_video_path):
+        for file_name in file_names:
+            if file_name.endswith(".mp4"):
+                _handle_single_video(os.path.join(cur_path, file_name))
+    print("run over!")
