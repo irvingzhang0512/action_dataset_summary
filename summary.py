@@ -374,7 +374,7 @@ def _get_summary_df(bbox_df, video_list, actions, total_samples, summary_file):
     bbox_df["index_name"] = (
         bbox_df["image"].str.split("_").apply(lambda x: x[-1][:5] + "_" + x[1])
     )
-    summary_df = bbox_df[
+    bbox_df = bbox_df[
         (bbox_df["is_medium"] > 0) & (~bbox_df["labeling_err"])
     ]
     summary_df = bbox_df.groupby("index_name").apply(_generate_action_results)
