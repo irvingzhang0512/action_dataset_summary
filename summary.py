@@ -9,8 +9,8 @@ video_dir = "renames/step1"  # 标注视频所在文件夹（会寻找子目录�
 
 # 一些参数
 avaiable_cameras = ["2m", "3m", "4m"]  # 处理指定摄像头的数据，若为空则处理所有
-# avaiable_person_ids = [7, 8, 9, 18, 19, 20, 21, 22]
-avaiable_person_ids = range(4, 7)
+avaiable_person_ids = [33]
+# avaiable_person_ids = range(13, 34)
 avaiable_persons = [
     "P%04d" % i for i in avaiable_person_ids
 ]  # 处理指定人物数据，若为空则处理所有
@@ -374,9 +374,7 @@ def _get_summary_df(bbox_df, video_list, actions, total_samples, summary_file):
     bbox_df["index_name"] = (
         bbox_df["image"].str.split("_").apply(lambda x: x[-1][:5] + "_" + x[1])
     )
-    bbox_df = bbox_df[
-        (bbox_df["is_medium"] > 0) & (~bbox_df["labeling_err"])
-    ]
+    bbox_df = bbox_df[(bbox_df["is_medium"] > 0)]
     summary_df = bbox_df.groupby("index_name").apply(_generate_action_results)
     summary_df.columns = actions
     for column in actions:
@@ -425,6 +423,7 @@ def _outputs_quality_feedback(qualify_feedback_file, summary_df):
 
     # 按严重程度分别输出相关质量问题
     # 1. 无法使用的数据
+    print("\n")
     context = "无效数据有 {} 个，分别是：".format(len(useless_list))
     print(context)
     qualify_feedback_writer.write(context + "\n")
@@ -459,9 +458,14 @@ def main(args):
     # 获取所有视频
     video_list = []
     for cur_path, _, file_names in os.walk(video_dir):
-        video_list += [
-            file_name for file_name in file_names if file_name.endswith(".mp4")
-        ]
+        for file_name in file_names:
+            if file_name.endswith(".mp4"):
+                row = file_name.split("_")
+                if (
+                    row[1] in avaiable_cameras
+                    and row[-1][:5] in avaiable_persons
+                ):
+                    video_list.append(file_name)
 
     # 获取视频 dict
     # key: {pid}_{camera}
