@@ -13,7 +13,7 @@
 
 ## 0. 前言
 + 希望大家仔细阅读这个文档。
-+ 在上传标注借过前，先运行 `suumary.py` 脚本，修正 `labeling_error.txt` 中的错误。
++ 在上传标注借过前，先运行 `summary.py` 脚本，修正 `labeling_error.txt` 中的错误。
 
 ## 1. 数据标注
 
