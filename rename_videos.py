@@ -2,9 +2,10 @@ import os
 import shutil
 
 # 输入数据
-src_video_path = "./splits/0729"
-target_video_path = "./renames"
-
+#src_video_path = "./splits/0729"
+#target_video_path = "./renames"
+src_video_path = "D:\工作文件\动作识别相关\行为识别数据集\\0804切割数据"
+target_video_path = "D:\工作文件\动作识别相关\行为识别数据集\英文分工\\0804"
 # 数据目录初始化
 useless_video_dir = os.path.join(target_video_path, "useless")
 step1_video_path = os.path.join(target_video_path, "step1")
@@ -57,6 +58,7 @@ sleeve_chinese_to_english = {
     # 衣着
     "短袖": "shortsleeve",
     "长袖": "longsleeve",
+    "长裙": "longdress",
 }
 shot_chinese_to_english = {
     # 视角
@@ -80,6 +82,14 @@ camera_chinese_to_english = {
     "reid03": "reid03",
     "reid04": "reid04",
     "reid05": "reid05",
+    "2M": "2m",
+    "3M": "3m",
+    "4M": "4m",
+    "RE-ID1": "reid01",
+    "RE-ID2": "reid02",
+    "RE-ID3": "reid03",
+    "RE-ID4": "reid04",
+    "RE-ID5": "reid05",
 }
 
 
@@ -163,7 +173,7 @@ def _handle_single_video(video_path):
         return
 
     # 根据 camera 类别拆分数据，并分别保存
-    if camera.startswith("reid"):
+    if camera.startswith("reid") or camera.startswith("RE-ID"):
         target_dir = os.path.join(step2_video_path, pid)
     else:
         target_dir = os.path.join(step1_video_path, pid)
