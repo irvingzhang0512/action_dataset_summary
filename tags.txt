@@ -1,0 +1,54 @@
+    "tags": [
+        {
+            "name": "qualified",
+            "color": "#ff8c00"
+        },
+        {
+            "name": "medium",
+            "color": "#5db300"
+        },
+        {
+            "name": "stand",
+            "color": "#4894fe"
+        },
+        {
+            "name": "sit",
+            "color": "#4894fe"
+        },
+        {
+            "name": "squat",
+            "color": "#4894fe"
+        },
+        {
+            "name": "lie",
+            "color": "#4894fe"
+        },
+        {
+            "name": "half_lie",
+            "color": "#4894fe"
+        },
+        {
+            "name": "other_pose",
+            "color": "#4894fe"
+        },
+        {
+            "name": "end",
+            "color": "#70c400"
+        },
+        {
+            "name": "err_remade_action_lacking",
+            "color": "#e81123"
+        },
+        {
+            "name": "err_useless",
+            "color": "#e81123"
+        },
+        {
+            "name": "err_name",
+            "color": "#e81123"
+        },
+        {
+            "name": "err_unknown",
+            "color": "#e81123"
+        }
+    ],
