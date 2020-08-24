@@ -283,11 +283,29 @@ def _outputs_quality_feedback(qualify_feedback_file, summary_df):
         qualify_feedback_writer.write("\n")
 
     # 4. 原始视频不存在
+    # 4.1. {person}_{camera} 缺少某几个视频
     if len(missing_video_list) > 0:
         context = "原始视频不存在的情况有{}个，分别是：".format(len(missing_video_list))
         print(context)
         qualify_feedback_writer.write(context + "\n")
         for context in missing_video_list:
+            print(context)
+            qualify_feedback_writer.write(context + "\n")
+        print()
+        qualify_feedback_writer.write("\n")
+
+    # 4.2. 缺少所有{person}_{camera} 的视频
+    all_person_camera = {
+        "{}_{}".format(person, camera)
+        for person in avaiable_persons
+        for camera in avaiable_cameras
+    }
+    cur_person_camera = set(summary_df.index.to_list())
+    missing_person_camera = all_person_camera - cur_person_camera
+    if len(missing_person_camera) > 0:
+        for row in missing_person_camera:
+            row = row.split("_")
+            context = "人物{}中所有{}摄像头的数据都不存在".format(row[0], row[1])
             print(context)
             qualify_feedback_writer.write(context + "\n")
         print()
@@ -547,7 +565,7 @@ if __name__ == "__main__":
     if enable_output_summary:
         sample_summary_df.to_csv(bbox_summary_file)
 
-    # 导出质量管理反馈结果
+    # 导出标注错误反馈结果
     if enable_labeling_err:
         labeling_err_writer = open(labeling_err_file, "w")
         _outputs_labeling_err(
