@@ -3,13 +3,13 @@ import os
 from collections import defaultdict
 
 # 输入
-csv_dir = "./data"  # 标注结果所在文件夹（会寻找子目录），后续处理所有`.csv`文件
-video_dir = "./data"  # 标注视频所在文件夹（会寻找子目录），后续处理所有`.mp4`文件
+csv_dir = "./data/raw_labels"  # 标注结果所在文件夹（会寻找子目录），后续处理所有`.csv`文件
+video_dir = "./data/action_dataset/step1"  # 标注视频所在文件夹（会寻找子目录），后续处理所有`.mp4`文件
 
 # 一些参数
 avaiable_cameras = ["2m", "3m", "4m"]  # 处理指定摄像头的数据，若为空则处理所有
-avaiable_person_ids = [75, 76]
-# avaiable_person_ids = range(94, 99)
+avaiable_person_ids = [319, 322]
+# avaiable_person_ids = range(207, 215)
 avaiable_persons = [
     "P%04d" % i for i in avaiable_person_ids
 ]  # 处理指定人物数据，若为空则处理所有
@@ -50,6 +50,7 @@ quality_type = {
     "err_remade_action_lacking",
     "err_useless",
     "err_name",
+    "err_rename",
     "err_camera_lacking",
     "err_action_lacking",
     "err_light",
@@ -77,6 +78,7 @@ typo_error_type = {
     "err_view",
     "err_shelter",
     "err_rename",
+    "err_name",
 }
 
 
@@ -86,14 +88,15 @@ translations_dict = {
     "err_remade_action_lacking": "需返工",
     "err_useless": "无效数据",
     "err_rename": "命名错误",
-    "err_camera_lacking": "画面缺失",
-    "err_action_lacking": "动作不完整或动作标注错误",
-    "err_light": "光照与文件名不符",
-    "err_pose": "姿态与文件名不符",
-    "err_sleeve": "衣着与文件名不符",
-    "err_view": "视角与文件名不符",
-    "err_shelter": "遮挡与文件名不符",
-    "err_unknown": "未知错误",
+    "err_name": "命名错误",
+    "err_camera_lacking": "无效数据",
+    "err_action_lacking": "需返工",
+    "err_light": "命名错误",
+    "err_pose": "命名错误",
+    "err_sleeve": "命名错误",
+    "err_view": "命名错误",
+    "err_shelter": "命名错误",
+    "err_unknown": "无效数据",
     "medium": "中间帧",
     "end": "结尾帧",
     "stand": "站",
@@ -236,7 +239,7 @@ def _outputs_quality_feedback(qualify_feedback_file, summary_df):
                 [
                     index_name,
                     translations_dict[action],
-                    _trans_func(row[1][action]),
+                    # _trans_func(row[1][action]),
                 ]
             )
             if row[1][action] == "No_Data":
@@ -310,6 +313,16 @@ def _outputs_quality_feedback(qualify_feedback_file, summary_df):
             qualify_feedback_writer.write(context + "\n")
         print()
         qualify_feedback_writer.write("\n")
+    
+    # 5. 数据合格率（不包括原始数据不存在）
+    qualified_cnt = (summary_df == 'qualified').sum().sum()
+    total_cnt = (quality_summary_df.isin(quality_type)).sum().sum()
+    accuracy = 100.0 * qualified_cnt / total_cnt
+    context = "数据合格率（不包括原始数据缺失的样本）为{:.1f}%".format(accuracy)
+    print(context)
+    qualify_feedback_writer.write(context + "\n")
+    print()
+    qualify_feedback_writer.write("\n")
 
     qualify_feedback_writer.close()
 
@@ -505,7 +518,7 @@ if __name__ == "__main__":
     # 获取原始df，并根据 camera 和 person 筛选数据
     df = _get_and_concat_all_csvs(csv_dir)
     df = _filter_df_by_camera_and_person(df, avaiable_cameras, avaiable_persons)
-    df["sample"] = df["image"].str.split(".").apply(lambda x: x[0])
+    df["sample"] = df["image"].str.split("#").apply(lambda x: x[0])
 
     # 获取质量相关数据
     # 根据sample执行 groupby，统计质量管理标签
